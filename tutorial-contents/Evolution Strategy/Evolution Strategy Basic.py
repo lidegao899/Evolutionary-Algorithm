@@ -23,6 +23,7 @@ def F(x):
 
 # find non-zero fitness for selection
 def get_fitness(pred):
+    # 把嵌套的数列展成一个数列
     return pred.flatten()
 
 # 生小孩
@@ -65,7 +66,11 @@ def kill_bad(pop, kids):
         pop[key] = pop[key][good_idx]
     return pop
 
-
+# DNA有两条，一条是DNA，对应问题数目，另一条是对应变异强度
+# DNA是0-5范围实数序列：np.random.rand(1, DNA_SIZE)
+# mut_strengths：变异强度0~1
+# 字典有POP_SIZE个键（因为repeat)，每个键的长度是DNA_SIZE个实数
+# 字典的值有POP_SIZE个，每个是DNA_SIZE长的列表
 pop = dict(DNA=5 * np.random.rand(1, DNA_SIZE).repeat(POP_SIZE, axis=0),   # initialize the pop DNA values
            mut_strength=np.random.rand(POP_SIZE, DNA_SIZE))                # initialize the pop mutation strength values
 
