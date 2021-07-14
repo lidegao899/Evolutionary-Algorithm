@@ -105,7 +105,6 @@ class SmartDim(object):
            mut_strength=np.random.rand(POP_SIZE, DNA_SIZE))                # initialize the pop mutation strength values
 
 sd = SmartDim()
-# print(GetLen(sd.pop['DNA']))
 plt.ion()
 
 for i in range(N_GENERATIONS):
