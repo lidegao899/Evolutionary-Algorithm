@@ -23,7 +23,10 @@ def MakeTarList():
 txl,tyl=MakeTarList()
 
 def GetFitness(lens):
-   return [np.exp(DNA_SIZE * 2 / len) for len in lens]
+   arr=[]
+   for len in lens:
+      arr.append(100/abs(len-5))
+   return arr
 
 # 获取所有样本的长度
 def GetLen(xys):
@@ -31,8 +34,11 @@ def GetLen(xys):
    sum=[]
    for xy in xys:
       xl,yl = xy.reshape((2, N_DIMS))
+      # len=np.sum(np.sqrt((xl - TargePos[0])**2 + (yl - TargePos[1])**2))
       len = np.sum(np.sqrt((xl - txl)**2 + (yl - tyl)**2))
-      sum.append(max(len,2))
+      # sum.append(max(len,2))
+
+      sum.append(1/(len))
    return sum
 
 # 计算DNA内最近点的距离

@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-N_DIMS = 6  # DIM size
+N_DIMS = 10  # DIM size
 DNA_SIZE = N_DIMS * 2             # DNA (real number)
 DNA_BOUND = [0, 40]       # solution upper and lower bounds
-N_GENERATIONS = 200
+N_GENERATIONS = 1000
 POP_SIZE = 100           # population size
 N_KID = 20               # n kids per generation
 
@@ -29,18 +29,22 @@ def MakeTarList():
 txl,tyl=MakeTarList()
 
 def GetFitness(lens):
-   return [np.exp(DNA_SIZE * 2 / len) for len in lens]
-
+   arr=[]
+   for len in lens:
+      arr.append(100/abs(len-5))
+   return arr
 
 # 获取所有样本的长度
 def GetLen(xys):
    # 样本所有点到（0,0）的距离
    sum=[]
    for xy in xys:
-      # 分离XY坐标
       xl,yl = xy.reshape((2, N_DIMS))
+      # len=np.sum(np.sqrt((xl - TargePos[0])**2 + (yl - TargePos[1])**2))
       len = np.sum(np.sqrt((xl - txl)**2 + (yl - tyl)**2))
-      sum.append(max(len,1))
+      # sum.append(max(len,2))
+
+      sum.append(1/(len))
    return sum
 
 # 计算DNA内最近点的距离
@@ -54,7 +58,7 @@ def getMinDisToOther(DNAS):
          for j in range(i + 1,N_DIMS):
             len=np.sum(np.sqrt((xl[i]-xl[j])**2+(yl[i]-yl[j])**2))
             minDis=min(minDis,len)
-      sum.append(min(minDis,1))
+      sum.append(min((minDis/3)**3,1))
    return sum
 
 def plotDNA(DNA):
@@ -90,7 +94,7 @@ def make_kid(pop, n_kid):
         # 分别选择父母的部分DNA
         kv[cp] = pop['DNA'][p1, cp]
         kv[~cp] = pop['DNA'][p2, ~cp]
-        # 合并到一个样本中
+        # 分别选择父母的变异强度
         ks[cp] = pop['mut_strength'][p1, cp]
         ks[~cp] = pop['mut_strength'][p2, ~cp]
 
@@ -114,7 +118,9 @@ def kill_bad(pop, kids):
    fitness = GetFitness(lens)      # calculate global fitness
    minDis=getMinDisToOther(pop['DNA'])
 
-   fitness = [ fitness[i] * minDis[i] for i in range(len(fitness))]
+   # fitness = [ fitness[i]  for i in range(len(fitness))]
+   fitness = [ (fitness[i] * minDis[i]) for i in range(len(fitness))]
+   
    bestFit = np.max(fitness)
    print('max fit',bestFit)
    bstFitness[curGenIndex] = np.max(bestFit)
@@ -137,9 +143,16 @@ plt.ion()
 for i in range(N_GENERATIONS):
    kids = make_kid(sd.pop, N_KID)
    sd.pop = kill_bad(sd.pop, kids)
-
-   plotDNA(sd.pop['DNA'][-1])
+   print('min dis is ',np.min(getMinDisToOther(sd.pop['DNA'])))
    curGenIndex += 1
 
+# 获取所有适应度
+lens=GetLen(sd.pop['DNA'])
+fitness = GetFitness(lens)      # calculate global fitness
+minDis=getMinDisToOther(sd.pop['DNA'])
+fitness = [ (fitness[i] * minDis[i]) for i in range(len(fitness))]
+best_idx = np.argmax(fitness)
+
+plotDNA(sd.pop['DNA'][best_idx])
 plt.ioff()
 plt.show()
