@@ -1,15 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-N_DIMS = 6  # DNA size
+N_DIMS = 6  # DIM size
 DNA_SIZE = N_DIMS * 2             # DNA (real number)
 DNA_BOUND = [0, 40]       # solution upper and lower bounds
-N_GENERATIONS = 800
+N_GENERATIONS = 200
 POP_SIZE = 100           # population size
 N_KID = 20               # n kids per generation
 
 # 两个目标点
-TargePos=np.array([[10,20],[30,20]]) 
+TargePos=np.array([[10,20],[30,20]])
+
+# plot var
+xAis = np.arange(N_GENERATIONS)
+bstFitness = np.empty(N_GENERATIONS)
+curGenIndex = 0
+fig, axs = plt.subplots(1, 2)
 
 def MakePnt():
    return np.random.rand(N_DIMS, 2)
@@ -23,19 +29,18 @@ def MakeTarList():
 txl,tyl=MakeTarList()
 
 def GetFitness(lens):
-   arr=[]
-   for len in lens:
-      arr.append(np.exp(DNA_SIZE * 2 / len))
-   return arr
+   return [np.exp(DNA_SIZE * 2 / len) for len in lens]
+
 
 # 获取所有样本的长度
 def GetLen(xys):
    # 样本所有点到（0,0）的距离
    sum=[]
    for xy in xys:
+      # 分离XY坐标
       xl,yl = xy.reshape((2, N_DIMS))
       len = np.sum(np.sqrt((xl - txl)**2 + (yl - tyl)**2))
-      sum.append(max(len,2))
+      sum.append(max(len,1))
    return sum
 
 # 计算DNA内最近点的距离
@@ -44,12 +49,32 @@ def getMinDisToOther(DNAS):
    for DNA in DNAS:
       minDis=100000
       xl,yl = DNA.reshape((2, N_DIMS))
+      # 计算所有点的距离，取最小值
       for i in range(N_DIMS):
          for j in range(i + 1,N_DIMS):
             len=np.sum(np.sqrt((xl[i]-xl[j])**2+(yl[i]-yl[j])**2))
             minDis=min(minDis,len)
       sum.append(min(minDis,1))
    return sum
+
+def plotDNA(DNA):
+   # 清空区域
+   axs[0].cla()
+   axs[1].cla()
+   
+   # drawDNA
+   xl, yl = DNA.reshape((2, N_DIMS))
+   axs[0].scatter(txl, tyl, s=200, lw=0, c='black', alpha=0.5)
+   axs[0].scatter(xl, yl, s=200, lw=0, c='red', alpha=0.5)
+
+   for i in range(len(xl)):
+      axs[0].plot([xl[i], txl[i]], [yl[i], tyl[i]], 'r-')
+
+   # draw best fitness
+   axs[1].plot(xAis, bstFitness)
+   fig.tight_layout()
+   plt.pause(0.2)
+   
 
 # 生小孩
 def make_kid(pop, n_kid):
@@ -90,8 +115,10 @@ def kill_bad(pop, kids):
    minDis=getMinDisToOther(pop['DNA'])
 
    fitness = [ fitness[i] * minDis[i] for i in range(len(fitness))]
-   print('max fit',np.max(fitness))
-
+   bestFit = np.max(fitness)
+   print('max fit',bestFit)
+   bstFitness[curGenIndex] = np.max(bestFit)
+   
    idx = np.arange(pop['DNA'].shape[0])
    # 递增排列，取后POP_SIZE位
    good_idx = idx[np.argsort(fitness)][-POP_SIZE:]   # selected by fitness ranking (not value)
@@ -108,19 +135,11 @@ sd = SmartDim()
 plt.ion()
 
 for i in range(N_GENERATIONS):
-    kids = make_kid(sd.pop, N_KID)
-    sd.pop = kill_bad(sd.pop, kids)
-    xl, yl = sd.pop['DNA'][-1].reshape((2, N_DIMS))
+   kids = make_kid(sd.pop, N_KID)
+   sd.pop = kill_bad(sd.pop, kids)
 
-    plt.cla()
-    # fig, ax = plt.subplots()
-    plt.scatter(txl, tyl, s=200, lw=0, c='black', alpha=0.5)
-    plt.scatter(xl, yl, s=200, lw=0, c='red', alpha=0.5)
-
-    for i in range(len(xl)):
-        plt.plot([xl[i], txl[i]], [yl[i], tyl[i]], 'r-')
-
-    plt.pause(0.02)
+   plotDNA(sd.pop['DNA'][-1])
+   curGenIndex += 1
 
 plt.ioff()
 plt.show()

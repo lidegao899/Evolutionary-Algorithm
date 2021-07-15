@@ -23,10 +23,7 @@ def MakeTarList():
 txl,tyl=MakeTarList()
 
 def GetFitness(lens):
-   arr=[]
-   for len in lens:
-      arr.append(np.exp(DNA_SIZE * 2 / len))
-   return arr
+   return [np.exp(DNA_SIZE * 2 / len) for len in lens]
 
 # 获取所有样本的长度
 def GetLen(xys):
