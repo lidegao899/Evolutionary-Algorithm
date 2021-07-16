@@ -6,7 +6,7 @@ DNA_SIZE = N_DIMS * 2             # DNA (real number)
 DNA_BOUND = [0, 40]       # solution upper and lower bounds
 N_GENERATIONS = 1000
 POP_SIZE = 200           # population size
-N_KID = 20               # n kids per generation
+N_KID = 40               # n kids per generation
 
 # 两个目标点
 TargePos = np.array([[-2, 20], [-2, 20]])
@@ -28,21 +28,30 @@ def MakeTarList():
     xl = TargePos[..., 0].repeat(N_DIMS/2)
     yl = TargePos[..., 1].repeat(N_DIMS/2)
     # TODO:标注按照大小排序，exp函数进行
-    dimVal = np.random.randint(1,100,N_DIMS).flatten()
-    
-    idx = np.arange(len(dimVal))
-    sortIdx= idx[np.argsort(-dimVal)]
-    dimWeight = np.exp(sortIdx)
+
+    # tmpVal = np.exp(np.arange(len(dimVal)))
+    # # sortval
+    # ddd = tmpVal[np.argsort(-dimVal)]
+    # idx = np.arange(len(dimVal))
+    # sortIdx= idx[np.argsort(-dimVal)]
+    # dimWeight = np.exp(sortIdx)
+
+    dimVal=np.array(range(1, N_DIMS + 1))
+    dimWeight = np.exp(np.flipud(dimVal))
     return xl, yl, dimVal, dimWeight
 
 
 txl, tyl, dimVal, dimWeight = MakeTarList()
 
+MaxFitness= N_DIMS * DNA_BOUND[1] * np.max(dimWeight)
 
 def GetFitness(lens):
     arr = []
     for len in lens:
-        arr.append(100/abs(len-2))
+
+        # arr.append(100/abs(len-2))
+        arr.append(MaxFitness-len)
+
     return arr
 
 # 获取所有样本的长度
@@ -57,9 +66,12 @@ def GetLen(xys):
         xl, yl = xy.reshape((2, N_DIMS))
         lenList = np.sqrt((xl - txl)**2 + (yl - tyl)**2)
         lenList = lenList * dimWeight
-        len = np.sum(np.sqrt((xl - txl)**2 + (yl - tyl)**2))
+
+        # len = np.sum(np.sqrt((xl - txl)**2 + (yl - tyl)**2))
         # len = np.sum(abs(xl - txl))
-        sum.append(1/(len))
+        # sum.append(len)
+        len = np.sum(lenList)
+        sum.append(len)
     return sum
 
 # 计算DNA内最近点的距离
@@ -184,6 +196,7 @@ for i in range(N_GENERATIONS):
     sd.pop = kill_bad(sd.pop, kids)
     print('min dis is ', np.min(getMinDisToOther(sd.pop['DNA'])))
     curGenIndex += 1
+
     # plotDNA(sd.pop['DNA'][-1])
     # plt.pause(0.05)
 
