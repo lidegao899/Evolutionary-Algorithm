@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-N_DIMS = 8  # DIM size
+N_DIMS = 6  # DIM size
 DNA_SIZE = N_DIMS * 2             # DNA (real number)
 DNA_BOUND = [0, 40]       # solution upper and lower bounds
-N_GENERATIONS = 300
-POP_SIZE = 300           # population size
-N_KID = 60               # n kids per generation
+N_GENERATIONS = 1000
+POP_SIZE = 200           # population size
+N_KID = 20               # n kids per generation
 
 # 两个目标点
 TargePos = np.array([[-2, 20], [-2, 20]])
@@ -27,16 +27,22 @@ def MakePnt():
 def MakeTarList():
     xl = TargePos[..., 0].repeat(N_DIMS/2)
     yl = TargePos[..., 1].repeat(N_DIMS/2)
-    return xl, yl
+    # TODO:标注按照大小排序，exp函数进行
+    dimVal = np.random.randint(1,100,N_DIMS).flatten()
+    
+    idx = np.arange(len(dimVal))
+    sortIdx= idx[np.argsort(-dimVal)]
+    dimWeight = np.exp(sortIdx)
+    return xl, yl, dimVal, dimWeight
 
 
-txl, tyl = MakeTarList()
+txl, tyl, dimVal, dimWeight = MakeTarList()
 
 
 def GetFitness(lens):
     arr = []
     for len in lens:
-        arr.append(100/abs(len-5))
+        arr.append(100/abs(len-2))
     return arr
 
 # 获取所有样本的长度
@@ -46,11 +52,13 @@ def GetLen(xys):
     # 样本所有点到（0,0）的距离
     sum = []
     for xy in xys:
+    # for xy,val in zip(xys,dimVal):
+        
         xl, yl = xy.reshape((2, N_DIMS))
-        # len=np.sum(np.sqrt((xl - TargePos[0])**2 + (yl - TargePos[1])**2))
+        lenList = np.sqrt((xl - txl)**2 + (yl - tyl)**2)
+        lenList = lenList * dimWeight
         len = np.sum(np.sqrt((xl - txl)**2 + (yl - tyl)**2))
-        # sum.append(max(len,2))
-
+        # len = np.sum(abs(xl - txl))
         sum.append(1/(len))
     return sum
 
@@ -82,10 +90,13 @@ def plotDNA(DNA):
 
     for i in range(len(xl)):
         axs[0].plot([xl[i], txl[i]], [yl[i], tyl[i]], 'r-')
+        # plot text
+        axs[0].text(xl[i], yl[i], str(dimVal[i]), size=15, va="center", ha="center")
 
     # draw best fitness
     axs[1].plot(xAis, bstFitness)
     fig.tight_layout()
+    
     plt.pause(0.2)
 
 
@@ -111,9 +122,6 @@ def make_kid(pop, n_kid):
         ks[cp] = pop['mut_strength'][p1, cp]
         ks[~cp] = pop['mut_strength'][p2, ~cp]
 
-        # kv[N_DIMS:]=pop['DNA'][p1][N_DIMS:]
-        # ks[N_DIMS] = pop['mut_strength'][p1]
-
         # 正态分布标准差
         # mutate (change DNA based on normal distribution)
         ks[:] = np.maximum(
@@ -123,12 +131,10 @@ def make_kid(pop, n_kid):
         # 限制范围
         kv[:] = np.clip(kv, *DNA_BOUND)    # clip the mutated value
 
-        # 坐标预处理，对其y坐标
+        # Y坐标不做优化，重置
         for i in range(N_DIMS,DNA_SIZE):
             kv[i] = tyl[i- N_DIMS]
-
-        # kv[N_DIMS:]=pop['DNA'][p1][N_DIMS:]
-        # ks[N_DIMS] = pop['mut_strength'][p1]
+            
     return kids
 
 # 移除不好样本
@@ -162,24 +168,24 @@ def kill_bad(pop, kids):
 
 class SmartDim(object):
     def __init__(self):
+        xPosListRand = DNA_BOUND[1] * np.random.rand(1,N_DIMS * POP_SIZE).reshape(POP_SIZE,N_DIMS)
         # 生成与目标标注相同的Y坐标点标注
-        # DNAS = np.array([np.array([np.random.rand(1, N_DIMS),[tyl]]).reshape(1,DNA_SIZE) for i in range(POP_SIZE)])
-        # tmp = np.array([np.random.rand(1, N_DIMS),[tyl]]).reshape(1,DNA_SIZE).repeat(POP_SIZE, axis=0)
-        self.pop = dict(DNA =np.array([np.random.rand(1, N_DIMS),[tyl]]).reshape(1,DNA_SIZE).repeat(POP_SIZE, axis=0),   # initialize the pop DNA values
+        DNAList = np.concatenate((xPosListRand, tyl.repeat(POP_SIZE, axis=0).reshape(POP_SIZE,N_DIMS)), axis=1)
+        self.pop = dict(DNA = DNAList,
                         mut_strength=np.random.rand(POP_SIZE, DNA_SIZE))                # initialize the pop mutation strength values
 
 sd = SmartDim()
 plt.ion()
 plotDNA(sd.pop['DNA'][-1])
-plt.pause(0.01)
+plt.pause(0.5)
+
 for i in range(N_GENERATIONS):
     kids = make_kid(sd.pop, N_KID)
     sd.pop = kill_bad(sd.pop, kids)
     print('min dis is ', np.min(getMinDisToOther(sd.pop['DNA'])))
     curGenIndex += 1
-    plotDNA(sd.pop['DNA'][-1])
-    plt.pause(0.01)
-
+    # plotDNA(sd.pop['DNA'][-1])
+    # plt.pause(0.05)
 
 # 获取所有适应度
 lens = GetLen(sd.pop['DNA'])
@@ -189,5 +195,6 @@ fitness = [(fitness[i] * minDis[i]) for i in range(len(fitness))]
 best_idx = np.argmax(fitness)
 
 plotDNA(sd.pop['DNA'][best_idx])
-plt.ioff()
+plt.pause(100)
 plt.show()
+plt.ioff()
