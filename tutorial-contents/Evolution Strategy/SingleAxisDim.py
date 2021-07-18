@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-N_DIMS = 6  # DIM size
+N_DIMS = 4  # DIM size
 DNA_SIZE = N_DIMS * 2             # DNA (real number)
 DNA_BOUND = [0, 40]       # solution upper and lower bounds
-N_GENERATIONS = 1000
+N_GENERATIONS = 600
 POP_SIZE = 200           # population size
 N_KID = 40               # n kids per generation
 
@@ -48,10 +48,10 @@ MaxFitness= N_DIMS * DNA_BOUND[1] * np.max(dimWeight)
 def GetFitness(lens):
     arr = []
     for len in lens:
-
         # arr.append(100/abs(len-2))
         arr.append(MaxFitness-len)
-
+    if(np.min(arr)<0):
+        print('error')
     return arr
 
 # 获取所有样本的长度
@@ -64,9 +64,10 @@ def GetLen(xys):
     # for xy,val in zip(xys,dimVal):
         
         xl, yl = xy.reshape((2, N_DIMS))
-        lenList = np.sqrt((xl - txl)**2 + (yl - tyl)**2)
-        lenList = lenList * dimWeight
+        # lenList = np.sqrt((xl - txl)**2 + (yl - tyl)**2)
+        # lenList = lenList * dimWeight
 
+        lenList = (xl - txl) * dimWeight
         # len = np.sum(np.sqrt((xl - txl)**2 + (yl - tyl)**2))
         # len = np.sum(abs(xl - txl))
         # sum.append(len)
@@ -106,7 +107,7 @@ def plotDNA(DNA):
         axs[0].text(xl[i], yl[i], str(dimVal[i]), size=15, va="center", ha="center")
 
     # draw best fitness
-    axs[1].plot(xAis, bstFitness)
+    axs[1].plot(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
     fig.tight_layout()
     
     plt.pause(0.2)
@@ -167,8 +168,10 @@ def kill_bad(pop, kids):
 
     bestFit = np.max(fitness)
     print('max fit', bestFit)
-    bstFitness[curGenIndex] = np.max(bestFit)
 
+    bstFitness[curGenIndex] = np.max(bestFit)
+    if(curGenIndex == 0):
+        bstFitness[:] = bstFitness[0]
     idx = np.arange(pop['DNA'].shape[0])
     # 递增排列，取后POP_SIZE位
     # selected by fitness ranking (not value)
@@ -189,7 +192,7 @@ class SmartDim(object):
 sd = SmartDim()
 plt.ion()
 plotDNA(sd.pop['DNA'][-1])
-plt.pause(0.5)
+plt.pause(10)
 
 for i in range(N_GENERATIONS):
     kids = make_kid(sd.pop, N_KID)
@@ -197,8 +200,8 @@ for i in range(N_GENERATIONS):
     print('min dis is ', np.min(getMinDisToOther(sd.pop['DNA'])))
     curGenIndex += 1
 
-    # plotDNA(sd.pop['DNA'][-1])
-    # plt.pause(0.05)
+    plotDNA(sd.pop['DNA'][-1])
+    plt.pause(0.05)
 
 # 获取所有适应度
 lens = GetLen(sd.pop['DNA'])

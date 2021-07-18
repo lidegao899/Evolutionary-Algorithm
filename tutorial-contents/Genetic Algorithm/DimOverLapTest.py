@@ -6,7 +6,7 @@ Visit my tutorial website for more: https://mofanpy.com/tutorials/
 import matplotlib.pyplot as plt
 import numpy as np
 
-N_CITIES = 20  # DNA size
+N_CITIES = 5  # DNA size
 CROSS_RATE = 0.1
 MUTATE_RATE = 0.02
 POP_SIZE = 500
@@ -23,6 +23,7 @@ class GA(object):
         self.pop = np.vstack([np.random.permutation(DNA_size) for _ in range(pop_size)])
 
     def translateDNA(self, DNA, city_position):     # get cities' coord in order
+        # 
         line_x = np.empty_like(DNA, dtype=np.float64)
         line_y = np.empty_like(DNA, dtype=np.float64)
         for i, d in enumerate(DNA):
@@ -31,10 +32,14 @@ class GA(object):
             line_y[i, :] = city_coord[:, 1]
         return line_x, line_y
 
+    # 传入坐标列表
     def get_fitness(self, line_x, line_y):
         total_distance = np.empty((line_x.shape[0],), dtype=np.float64)
+        # 组合坐标，遍历
         for i, (xs, ys) in enumerate(zip(line_x, line_y)):
+            # 平方差求和
             total_distance[i] = np.sum(np.sqrt(np.square(np.diff(xs)) + np.square(np.diff(ys))))
+        # 用指数函数扩大差异
         fitness = np.exp(self.DNA_size * 2 / total_distance)
         return fitness, total_distance
 
@@ -82,6 +87,12 @@ class TravelSalesPerson(object):
         plt.xlim((-0.1, 1.1))
         plt.ylim((-0.1, 1.1))
         plt.pause(0.01)
+    def Myplotting(self):
+        plt.cla()
+        plt.scatter(self.city_position[:, 0].T, self.city_position[:, 1].T, s=100, c='k')
+        plt.xlim((-0.1, 1.1))
+        plt.ylim((-0.1, 1.1))
+        plt.pause(0.01)
 
 
 ga = GA(DNA_size=N_CITIES, cross_rate=CROSS_RATE, mutation_rate=MUTATE_RATE, pop_size=POP_SIZE)
@@ -96,5 +107,6 @@ for generation in range(N_GENERATIONS):
 
     env.plotting(lx[best_idx], ly[best_idx], total_distance[best_idx])
 
+# env.plotting()
 plt.ioff()
 plt.show()
