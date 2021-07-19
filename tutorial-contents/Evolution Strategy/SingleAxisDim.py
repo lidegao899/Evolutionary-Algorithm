@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-N_DIMS = 4  # DIM size
+N_DIMS = 6  # DIM size
 DNA_SIZE = N_DIMS * 2             # DNA (real number)
 DNA_BOUND = [0, 40]       # solution upper and lower bounds
 N_GENERATIONS = 600
@@ -17,7 +17,6 @@ bstFitness = np.empty(N_GENERATIONS)
 curGenIndex = 0
 fig, axs = plt.subplots(1, 2)
 
-
 def MakePnt():
     return np.random.rand(N_DIMS, 2)
 
@@ -27,17 +26,13 @@ def MakePnt():
 def MakeTarList():
     xl = TargePos[..., 0].repeat(N_DIMS/2)
     yl = TargePos[..., 1].repeat(N_DIMS/2)
-    # TODO:标注按照大小排序，exp函数进行
 
-    # tmpVal = np.exp(np.arange(len(dimVal)))
-    # # sortval
-    # ddd = tmpVal[np.argsort(-dimVal)]
-    # idx = np.arange(len(dimVal))
-    # sortIdx= idx[np.argsort(-dimVal)]
-    # dimWeight = np.exp(sortIdx)
+    tmp = np.random.randint(DNA_BOUND[0], DNA_BOUND[1], N_DIMS) + 1
+    index= np.argsort(tmp)
+    dimVal = tmp[index]
 
-    dimVal=np.array(range(1, N_DIMS + 1))
-    dimWeight = np.exp(np.flipud(dimVal))
+    # dimVal=np.array(range(1, N_DIMS + 1))
+    dimWeight = np.exp(np.flipud(np.array(range(1, N_DIMS + 1))))
     return xl, yl, dimVal, dimWeight
 
 
@@ -91,6 +86,24 @@ def getMinDisToOther(DNAS):
         sum.append(min((minDis/3)**3, 1))
     return sum
 
+
+def plotDim(posCur, posTar, dimLen):
+    arrow_params = {'head_width':1, 'head_length':1
+                    , 'length_includes_head': True}
+    axs[0].arrow(posCur[0], posCur[1], 0, dimLen/2, **arrow_params)
+    axs[0].arrow(posCur[0], posTar[1], 0, -dimLen/2, **arrow_params)
+
+    # 标注指向目标的方向向量
+    dimVec = np.subtract(posCur, posTar)
+    dir = np.cross([dimVec[0],dimVec[1],0],[0,0,1])
+    # 辅助法向量，用于画标注距离线
+    norV = (dir / np.linalg.norm(dir))[:2]
+    lBorder = [posCur,posTar] + norV.repeat(1) * dimLen/2
+    rBorder = [posCur,posTar] - norV.repeat(1) * dimLen/2
+    # 绘制标注边界线
+    axs[0].plot(lBorder[...,0], lBorder[...,1], color='black')
+    axs[0].plot(rBorder[...,0], rBorder[...,1], color='black')
+
 def plotDNA(DNA):
     # 清空区域
     axs[0].cla()
@@ -100,16 +113,18 @@ def plotDNA(DNA):
     xl, yl = DNA.reshape((2, N_DIMS))
     axs[0].scatter(txl, tyl, s=200, lw=0, c='black', alpha=0.5)
     axs[0].scatter(xl, yl, s=200, lw=0, c='red', alpha=0.5)
+    axs[0].set_title('best dimension graph')
 
     for i in range(len(xl)):
         axs[0].plot([xl[i], txl[i]], [yl[i], tyl[i]], 'r-')
         # plot text
         axs[0].text(xl[i], yl[i], str(dimVal[i]), size=15, va="center", ha="center")
+        plotDim([xl[i],yl[i]],[txl[i],tyl[i]],dimVal[i])
 
     # draw best fitness
+    axs[1].set_title('best fitness')
     axs[1].plot(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
     fig.tight_layout()
-    
     plt.pause(0.2)
 
 
@@ -192,7 +207,7 @@ class SmartDim(object):
 sd = SmartDim()
 plt.ion()
 plotDNA(sd.pop['DNA'][-1])
-plt.pause(10)
+plt.pause(25)
 
 for i in range(N_GENERATIONS):
     kids = make_kid(sd.pop, N_KID)
@@ -200,8 +215,8 @@ for i in range(N_GENERATIONS):
     print('min dis is ', np.min(getMinDisToOther(sd.pop['DNA'])))
     curGenIndex += 1
 
-    plotDNA(sd.pop['DNA'][-1])
-    plt.pause(0.05)
+    # plotDNA(sd.pop['DNA'][-1])
+    # plt.pause(0.05)
 
 # 获取所有适应度
 lens = GetLen(sd.pop['DNA'])
