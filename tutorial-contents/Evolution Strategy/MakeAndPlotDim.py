@@ -15,7 +15,7 @@ fig, axs = plt.subplots(1, 2)
 
 
 def plotDim(posLeft, posRight, txtHeigh):
-    arrow_params = {'head_width': 1, 'head_length': 1,
+    arrow_params = {'head_width': 0.2, 'head_length': 0.2,
                     'length_includes_head': True}
     dimLen = abs(posLeft-posRight)
     midPost = posLeft + dimLen/2
@@ -38,18 +38,19 @@ def plotDNA(DimPos):
     # axs[0].scatter(xl, yl, s=200, lw=0, c='red', alpha=0.5)
     # axs[0].set_title('best dimension graph')
 
-    for dims in DimPos:
+    # for dims in DimPos:
         # axs[0].plot([xl[i], txl[i]], [yl[i], tyl[i]], 'r-')
         # plot text
-        for dim in dims:
-            val = abs(dim[1]-dim[0])
-            axs[0].text(dim[0] + val/2, dim[2], str(val),
-                        size=15, va="center", ha="center")
-            plotDim(dim[0], dim[1], dim[2])
+    for dim in DimPos:
+        val = abs(dim[1]-dim[0])
+        axs[0].text(dim[0] + val/2, dim[2], str(val),
+                    size=15, va="center", ha="center")
+        plotDim(dim[0], dim[1], dim[2])
 
-    # # draw best fitness
-    # axs[1].set_title('best fitness')
-    # axs[1].plot(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
+
+def plotFitness(xAis,bstFitness):
+    axs[1].set_title('best fitness')
+    axs[1].plot(xAis, bstFitness)
     fig.tight_layout()
     plt.pause(0.5)
 
