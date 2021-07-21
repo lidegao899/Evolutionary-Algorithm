@@ -4,16 +4,19 @@ import MakeAndPlotDim as ploter
 
 N_DIMS = 4  # DIM size
 DNA_SIZE = N_DIMS            # DNA (real number)
-DNA_BOUND = [0, 20]       # solution upper and lower bounds
-N_GENERATIONS = 200
-POP_SIZE = 2           # population size
-N_KID = 1               # n kids per generation
+DNA_BOUND = [0, 8]       # solution upper and lower bounds
+N_GENERATIONS = 600
+POP_SIZE = 200           # population size
+N_KID = 40               # n kids per generation
 
 curGenIndex = 0
-TargePos = [[1, 6], [4, 9], [1, 15], [12, 37]]
+TargePos = [[1, 5], [4, 9], [8, 19], [17, 37]]
+# TargePos = [[1, 5], [4, 9]]
+
 
 bstFitness = np.empty(N_GENERATIONS)
 xAis = np.arange(N_GENERATIONS)
+
 
 def MackDic():
     keys = []
@@ -34,8 +37,11 @@ def MakeTarList():
     # xl = TargePos[..., 0].repeat(N_DIMS/2)
     # yl = TargePos[..., 1].repeat(N_DIMS/2)
 
-    dimVal = [5, 5, 14, 25]
+    dimVal = [4, 5, 11, 20]
     dimWeight = [4, 3, 2, 1]
+
+    # dimVal = [4, 5]
+    # dimWeight = [2, 1]
 
     # dimVal=np.array(range(1, N_DIMS + 1))
     dimWeight = np.exp(dimWeight)
@@ -47,13 +53,7 @@ MaxFitness = N_DIMS * DNA_BOUND[1] * np.max(dimWeight)
 
 
 def GetFitness(lens):
-    # arr = []
-    # for len in lens:
-    #     # arr.append(100/abs(len-2))
-    #     arr.append(MaxFitness-len)
-    # if(np.min(arr) < 0):
-    #     print('error')
-    return  MaxFitness - np.array(lens)
+    return MaxFitness - np.array(lens)
 
 
 # 获取所有样本的长度
@@ -76,59 +76,17 @@ def GetLen(yList):
 def getMinDisToOther(DNAS):
     # 有重叠的标注，高度一样则非法，mindis = 0.01
     sum = []
-    minDis = 10000
     for DNA in DNAS:
+        minDis = 10000
         # 计算所有点的距离，取最小值
         for i in range(N_DIMS):
             for j in range(i + 1, N_DIMS):
-                if(isOverLap(TargePos[i],TargePos[j])):
+                if(isOverLap(TargePos[i], TargePos[j])):
                     if(DNA[i] == DNA[j]):
-                    # 范围重叠时，判断高度是否一致
+                        # 范围重叠时，判断高度是否一致
                         minDis = 0.01
-                    # break
-        sum.append(min((minDis, 1)))
+        sum.append(min(minDis, 1))
     return sum
-
-
-# def plotDim(posCur, posTar, dimLen):
-#     arrow_params = {'head_width':1, 'head_length':1
-#                     , 'length_includes_head': True}
-#     axs[0].arrow(posCur[0], posCur[1], 0, dimLen/2, **arrow_params)
-#     axs[0].arrow(posCur[0], posTar[1], 0, -dimLen/2, **arrow_params)
-
-#     # 标注指向目标的方向向量
-#     dimVec = np.subtract(posCur, posTar)
-#     dir = np.cross([dimVec[0],dimVec[1],0],[0,0,1])
-#     # 辅助法向量，用于画标注距离线
-#     norV = (dir / np.linalg.norm(dir))[:2]
-#     lBorder = [posCur,posTar] + norV.repeat(1) * dimLen/2
-#     rBorder = [posCur,posTar] - norV.repeat(1) * dimLen/2
-#     # 绘制标注边界线
-#     axs[0].plot(lBorder[...,0], lBorder[...,1], color='black')
-#     axs[0].plot(rBorder[...,0], rBorder[...,1], color='black')
-
-# def plotDNA(DNA):
-#     # 清空区域
-#     axs[0].cla()
-#     axs[1].cla()
-
-#     # drawDNA
-#     xl, yl = DNA.reshape((2, N_DIMS))
-#     axs[0].scatter(txl, tyl, s=200, lw=0, c='black', alpha=0.5)
-#     axs[0].scatter(xl, yl, s=200, lw=0, c='red', alpha=0.5)
-#     axs[0].set_title('best dimension graph')
-
-#     for i in range(len(xl)):
-#         axs[0].plot([xl[i], txl[i]], [yl[i], tyl[i]], 'r-')
-#         # plot text
-#         axs[0].text(xl[i], yl[i], str(dimVal[i]), size=15, va="center", ha="center")
-#         plotDim([xl[i],yl[i]],[txl[i],tyl[i]],dimVal[i])
-
-#     # draw best fitness
-#     axs[1].set_title('best fitness')
-#     axs[1].plot(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
-#     fig.tight_layout()
-#     plt.pause(0.2)
 
 
 # 生小孩
@@ -159,21 +117,25 @@ def make_kid(pop, n_kid):
             ks + (np.random.rand(*ks.shape)-0.5), 0.)    # must > 0
         # 正态分布
         kv += ks * np.random.rand(*kv.shape)
-        if(np.min(kv)<0):
-            a=1
+        if(np.min(kv) < 0):
+            a = 1
         # muteIdx= np.random.randint(0,N_DIMS-1)
         # kv[muteIdx]=np.random.randint(0,DNA_BOUND)
         # 限制范围
         kv[:] = np.clip(kv, *DNA_BOUND)    # clip the mutated value
         kv[:] = np.ceil(kv)
-        if(np.min(kv)<0):
-            a=1
+        if(np.min(kv) < 0):
+            a = 1
     return kids
 
 # 移除不好样本
 
 
 def kill_bad(pop, kids):
+    lens = GetLen(pop['DNA'])
+    fitness = GetFitness(lens)      # calculate global fitness
+    minDis1 = getMinDisToOther(pop['DNA'])
+
     # 新老合并
     for key in ['DNA', 'mut_strength']:
         pop[key] = np.vstack((pop[key], kids[key]))
@@ -217,29 +179,16 @@ for i in range(N_GENERATIONS):
     sd.pop = kill_bad(sd.pop, kids)
     print('min dis is ', np.min(getMinDisToOther(sd.pop['DNA'])))
     curGenIndex += 1
-    bstDNA = np.concatenate((TargePos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
-    ploter.plotDNA(bstDNA)
-    # ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
-    ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex])
+    bstDNA = np.concatenate(
+        (TargePos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
+    # ploter.plotDNA(bstDNA)
+    # # ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
+    # plt.pause(0.05)
 
-    plt.pause(0.05)
-
-# # 获取所有适应度
-# lens = GetLen(sd.pop['DNA'])
-# fitness = GetFitness(lens)      # calculate global fitness
-# minDis = getMinDisToOther(sd.pop['DNA'])
-# fitness = [(fitness[i] * minDis[i]) for i in range(len(fitness))]
-# best_idx = np.argmax(fitness)
-
-# plotDNA(sd.pop['DNA'][best_idx])
-
-
-# DimList = np.random.randint(5, 40, 2 * N_DIMS).reshape(N_DIMS, 2)
-
-# for p in sd.pop['DNA']:
-#     bstDNA = np.concatenate((DimList, 10 * np.array([p]).T), axis=1)
-
-#     ploter.plotDNA([bstDNA])
+ploter.plotDNA(bstDNA)
+ploter.plotFitness(xAis[:curGenIndex],
+                   bstFitness[:curGenIndex] - bstFitness[0])
+# ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex])
 plt.pause(100)
 plt.show()
 plt.ioff()
