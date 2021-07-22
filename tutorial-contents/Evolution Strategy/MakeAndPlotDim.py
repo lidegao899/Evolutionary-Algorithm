@@ -15,7 +15,7 @@ fig, axs = plt.subplots(1, 2)
 
 
 def plotDim(posLeft, posRight, txtHeigh):
-    arrow_params = {'head_width': 0.2, 'head_length': 0.2,
+    arrow_params = {'head_width': 0.4, 'head_length': 0.6,
                     'length_includes_head': True}
     dimLen = abs(posLeft-posRight)
     midPost = posLeft + dimLen/2

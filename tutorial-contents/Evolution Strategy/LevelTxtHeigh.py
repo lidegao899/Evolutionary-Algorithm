@@ -2,35 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import MakeAndPlotDim as ploter
 
-N_DIMS = 8  # DIM size
+N_DIMS = 10  # DIM size
 DNA_SIZE = N_DIMS            # DNA (real number)
-DNA_BOUND = [0, N_DIMS + 1]       # solution upper and lower bounds
-N_GENERATIONS = 800
-POP_SIZE = 100           # population size
-N_KID = 20               # n kids per generation
+DNA_BOUND = [1, N_DIMS + 1]       # solution upper and lower bounds
+N_GENERATIONS = 1000
+POP_SIZE = 200           # population size
+N_KID = 40               # n kids per generation
 
 curGenIndex = 0
-# TargePos = [[1, 5], [4, 9], [8, 19], [3, 37]]
-# TargePos = [[1, 5], [4, 9]]
-
-
 bstFitness = np.empty(N_GENERATIONS)
 xAis = np.arange(N_GENERATIONS)
-
-
-def MackDic():
-    keys = np.random.randint(1, 40, N_DIMS*2).reshape(N_DIMS, 2)
-    keys = np.sort(keys)
-    # 计算长度
-    lens = np.array([key[1] - key[0] for key in keys])
-    index = np.argsort(-lens)
-    keys = keys[index]
-    weight = np.exp(range(1, len(keys)))
-    # 生成顺序
-    return keys, weight
-
-
-MackDic()
 
 
 def isOverLap(dimA, dimB):
@@ -44,19 +25,6 @@ def isOverLap(dimA, dimB):
 
 
 def MakeTarList():
-    # # xl = TargePos[..., 0].repeat(N_DIMS/2)
-    # # yl = TargePos[..., 1].repeat(N_DIMS/2)
-
-    # dimVal = [4, 5, 11, 20]
-    # dimWeight = [4, 3, 2, 1]
-
-    # # dimVal = [4, 5]
-    # # dimWeight = [2, 1]
-
-    # # dimVal=np.array(range(1, N_DIMS + 1))
-    # dimWeight = np.exp(dimWeight)
-    # return dimVal, dimWeight
-
     keys = np.random.randint(1, 40, N_DIMS*2).reshape(N_DIMS, 2)
     keys = np.sort(keys)
     # 计算长度
@@ -138,14 +106,16 @@ def make_kid(pop, n_kid):
         ks[:] = np.maximum(
             ks + (np.random.rand(*ks.shape)-0.5), 0.)    # must > 0
         # 正态分布
-        kv += ks * np.random.rand(*kv.shape)
+        # kv += ks * np.random.rand(*kv.shape)
+        kv += (np.random.binomial(n=N_DIMS, p=0.5, size=N_DIMS) - N_DIMS/2)
+
         if(np.min(kv) < 0):
             a = 1
         # muteIdx= np.random.randint(0,N_DIMS-1)
         # kv[muteIdx]=np.random.randint(0,DNA_BOUND)
         # 限制范围
         kv[:] = np.clip(kv, *DNA_BOUND)    # clip the mutated value
-        kv[:] = np.ceil(kv)
+        # kv[:] = np.ceil(kv)
         if(np.min(kv) < 0):
             a = 1
     return kids
@@ -167,8 +137,6 @@ def kill_bad(pop, kids):
     fitness = GetFitness(lens)      # calculate global fitness
     minDis = getMinDisToOther(pop['DNA'])
 
-    # fitness = [ fitness[i]  for i in range(len(fitness))]
-    # fitness = [(fitness[i] * minDis[i]) for i in range(len(fitness))]
     fitness = fitness * minDis
     bestFit = np.max(fitness)
     print('max fit', bestFit)
@@ -209,7 +177,6 @@ for i in range(N_GENERATIONS):
 ploter.plotDNA(bstDNA)
 ploter.plotFitness(xAis[:curGenIndex],
                    bstFitness[:curGenIndex] - bstFitness[0])
-# ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex])
 
 plt.pause(100)
 plt.show()
