@@ -2,15 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import MakeAndPlotDim as ploter
 
-N_DIMS = 4  # DIM size
+N_DIMS = 8  # DIM size
 DNA_SIZE = N_DIMS            # DNA (real number)
-DNA_BOUND = [0, 8]       # solution upper and lower bounds
-N_GENERATIONS = 600
-POP_SIZE = 200           # population size
-N_KID = 40               # n kids per generation
+DNA_BOUND = [0, N_DIMS + 1]       # solution upper and lower bounds
+N_GENERATIONS = 800
+POP_SIZE = 100           # population size
+N_KID = 20               # n kids per generation
 
 curGenIndex = 0
-TargePos = [[1, 5], [4, 9], [8, 19], [17, 37]]
+# TargePos = [[1, 5], [4, 9], [8, 19], [3, 37]]
 # TargePos = [[1, 5], [4, 9]]
 
 
@@ -19,8 +19,18 @@ xAis = np.arange(N_GENERATIONS)
 
 
 def MackDic():
-    keys = []
-    values = []
+    keys = np.random.randint(1, 40, N_DIMS*2).reshape(N_DIMS, 2)
+    keys = np.sort(keys)
+    # 计算长度
+    lens = np.array([key[1] - key[0] for key in keys])
+    index = np.argsort(-lens)
+    keys = keys[index]
+    weight = np.exp(range(1, len(keys)))
+    # 生成顺序
+    return keys, weight
+
+
+MackDic()
 
 
 def isOverLap(dimA, dimB):
@@ -34,21 +44,33 @@ def isOverLap(dimA, dimB):
 
 
 def MakeTarList():
-    # xl = TargePos[..., 0].repeat(N_DIMS/2)
-    # yl = TargePos[..., 1].repeat(N_DIMS/2)
+    # # xl = TargePos[..., 0].repeat(N_DIMS/2)
+    # # yl = TargePos[..., 1].repeat(N_DIMS/2)
 
-    dimVal = [4, 5, 11, 20]
-    dimWeight = [4, 3, 2, 1]
+    # dimVal = [4, 5, 11, 20]
+    # dimWeight = [4, 3, 2, 1]
 
-    # dimVal = [4, 5]
-    # dimWeight = [2, 1]
+    # # dimVal = [4, 5]
+    # # dimWeight = [2, 1]
 
-    # dimVal=np.array(range(1, N_DIMS + 1))
-    dimWeight = np.exp(dimWeight)
-    return dimVal, dimWeight
+    # # dimVal=np.array(range(1, N_DIMS + 1))
+    # dimWeight = np.exp(dimWeight)
+    # return dimVal, dimWeight
+
+    keys = np.random.randint(1, 40, N_DIMS*2).reshape(N_DIMS, 2)
+    keys = np.sort(keys)
+    # 计算长度
+    lens = np.array([key[1] - key[0] for key in keys])
+    index = np.argsort(-lens)
+    keys = keys[index]
+    weight = np.exp(range(1, len(keys)+1))
+    lens = np.array([key[1] - key[0] for key in keys])
+
+    # 生成顺序
+    return keys,lens,weight
 
 
-dimVal, dimWeight = MakeTarList()
+TargePos,dimVal, dimWeight = MakeTarList()
 MaxFitness = N_DIMS * DNA_BOUND[1] * np.max(dimWeight)
 
 
@@ -77,14 +99,14 @@ def getMinDisToOther(DNAS):
     # 有重叠的标注，高度一样则非法，mindis = 0.01
     sum = []
     for DNA in DNAS:
-        minDis = 10000
+        minDis = 1
         # 计算所有点的距离，取最小值
         for i in range(N_DIMS):
             for j in range(i + 1, N_DIMS):
                 if(isOverLap(TargePos[i], TargePos[j])):
                     if(DNA[i] == DNA[j]):
                         # 范围重叠时，判断高度是否一致
-                        minDis = 0.01
+                        minDis *= 0.5
         sum.append(min(minDis, 1))
     return sum
 
@@ -182,13 +204,13 @@ for i in range(N_GENERATIONS):
     bstDNA = np.concatenate(
         (TargePos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
     # ploter.plotDNA(bstDNA)
-    # # ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
-    # plt.pause(0.05)
+    # ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
 
 ploter.plotDNA(bstDNA)
 ploter.plotFitness(xAis[:curGenIndex],
                    bstFitness[:curGenIndex] - bstFitness[0])
 # ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex])
+
 plt.pause(100)
 plt.show()
 plt.ioff()

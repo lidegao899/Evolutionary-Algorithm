@@ -52,7 +52,7 @@ def plotFitness(xAis,bstFitness):
     axs[1].set_title('best fitness')
     axs[1].plot(xAis, bstFitness)
     fig.tight_layout()
-    plt.pause(0.5)
+    plt.pause(0.02)
 
 
 # plotDNA([DimList])
