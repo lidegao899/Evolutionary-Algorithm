@@ -13,9 +13,9 @@ res= sum(np.random.binomial(9, 0., 20000) == 0)/20000
 print(res)
 print(np.random.binomial(9, 0., 5))
 
-n1 = 4
+n1 = 6
 num = 10000
-bi = np.random.binomial(n=n1, p=0.5, size=num)
+bi = np.random.binomial(n=n1, p=0.51, size=num)
 n = np.random.normal(n1*0.5, sqrt(n1*0.5*0.5), size=num)
 
 mut_strength=np.random.rand(POP_SIZE, DNA_SIZE)

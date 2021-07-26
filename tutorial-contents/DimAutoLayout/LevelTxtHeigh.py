@@ -2,16 +2,34 @@ import numpy as np
 import matplotlib.pyplot as plt
 import MakeAndPlotDim as ploter
 
-N_DIMS = 10  # DIM size
+N_DIMS = 8  # DIM size
 DNA_SIZE = N_DIMS            # DNA (real number)
 DNA_BOUND = [1, N_DIMS + 1]       # solution upper and lower bounds
-N_GENERATIONS = 1000
+N_GENERATIONS = 300
 POP_SIZE = 200           # population size
-N_KID = 40               # n kids per generation
+N_KID = 80               # n kids per generation
 
 curGenIndex = 0
 bstFitness = np.empty(N_GENERATIONS)
 xAis = np.arange(N_GENERATIONS)
+
+
+def MakeTarList():
+    keys = np.random.randint(1, 40, N_DIMS*2).reshape(N_DIMS, 2)
+    keys = np.sort(keys)
+    # 计算长度
+    lens = np.array([key[1] - key[0] for key in keys])
+    index = np.argsort(-lens)
+    keys = keys[index]
+    weight = np.exp(2 * np.array(range(1, len(keys)+1)))
+    lens = np.array([key[1] - key[0] for key in keys])
+
+    # 生成顺序
+    return keys, lens, weight
+
+
+TargePos, dimVal, dimWeight = MakeTarList()
+MaxFitness = N_DIMS * DNA_BOUND[1] * np.max(dimWeight)
 
 
 def isOverLap(dimA, dimB):
@@ -24,23 +42,17 @@ def isOverLap(dimA, dimB):
     return False
 
 
-def MakeTarList():
-    keys = np.random.randint(1, 40, N_DIMS*2).reshape(N_DIMS, 2)
-    keys = np.sort(keys)
-    # 计算长度
-    lens = np.array([key[1] - key[0] for key in keys])
-    index = np.argsort(-lens)
-    keys = keys[index]
-    weight = np.exp(range(1, len(keys)+1))
-    lens = np.array([key[1] - key[0] for key in keys])
-
-    # 生成顺序
-    return keys,lens,weight
+def getOverlapNum():
+    XOverlapNum = np.zeros(40)
+    for dimRandge in TargePos:
+        for index in range(dimRandge[0], dimRandge[1]):
+            XOverlapNum[index] += 1
+    return np.max(XOverlapNum)
 
 
-TargePos,dimVal, dimWeight = MakeTarList()
-MaxFitness = N_DIMS * DNA_BOUND[1] * np.max(dimWeight)
-
+NUM_OVERLAP = getOverlapNum()
+VALID_DIM_RANGE = NUM_OVERLAP
+DNA_BOUND[1] = NUM_OVERLAP
 
 def GetFitness(lens):
     return MaxFitness - np.array(lens)
@@ -107,7 +119,8 @@ def make_kid(pop, n_kid):
             ks + (np.random.rand(*ks.shape)-0.5), 0.)    # must > 0
         # 正态分布
         # kv += ks * np.random.rand(*kv.shape)
-        kv += (np.random.binomial(n=N_DIMS, p=0.5, size=N_DIMS) - N_DIMS/2)
+        kv += (np.random.binomial(n=VALID_DIM_RANGE,
+               p=0.5, size = N_DIMS) - np.ceil(VALID_DIM_RANGE/2))
 
         if(np.min(kv) < 0):
             a = 1
@@ -156,7 +169,7 @@ def kill_bad(pop, kids):
 
 class SmartDim(object):
     def __init__(self):
-        self.pop = dict(DNA=np.random.randint(1, DNA_BOUND[1], N_DIMS * POP_SIZE).reshape(POP_SIZE, N_DIMS),
+        self.pop = dict(DNA=np.random.randint(1, VALID_DIM_RANGE, N_DIMS * POP_SIZE).reshape(POP_SIZE, N_DIMS),
                         mut_strength=np.random.rand(POP_SIZE, DNA_SIZE))                # initialize the pop mutation strength values
 
 
