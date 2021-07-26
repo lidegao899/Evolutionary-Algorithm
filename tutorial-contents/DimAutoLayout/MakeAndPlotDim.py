@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import LevelTxtHeigh as evo
 
 N_DIMS = 4  # DIM size
 DNA_SIZE = N_DIMS * 2             # DNA (real number)
@@ -84,3 +83,6 @@ def plotCompare(DNAS, fitCurves):
     for i in range(0, len(DNAS)):
         plotDNAForList(axs, DNAS[i], i)
         plotFitnessForList(fig, axs, fitCurves[i], i)
+
+def pause():
+    plt.pause(100)

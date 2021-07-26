@@ -1,12 +1,11 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import MakeAndPlotDim as ploter
 import AutoDimUtil as util
 
 N_DIMS = 10  # DIM size
 DNA_SIZE = N_DIMS            # DNA (real number)
 DNA_BOUND = [1, N_DIMS + 1]       # solution upper and lower bounds
-N_GENERATIONS = 40
+N_GENERATIONS = 300
 POP_SIZE = 100           # population size
 N_KID = 20               # n kids per generation
 
@@ -24,7 +23,7 @@ def make_kid(pop, n_kid):
     for kv, ks in zip(kids['DNA'], kids['mut_strength']):
         # crossover (roughly half p1 and half p2)
         # 选父母
-        p1, p2 = np.random.choice(np.arange(POP_SIZE), size=2, replace=False)
+        p1, p2 = np.random.choice(np.arange(25,POP_SIZE), size=2, replace=False)
         # 交叉点
         cp = np.random.randint(
             0, 2, DNA_SIZE, dtype=np.bool)  # crossover points
@@ -44,7 +43,7 @@ def make_kid(pop, n_kid):
             ks + (np.random.rand(*ks.shape)-0.5), 0.)    # must > 0
         # 正态分布
         # kv += ks * np.random.rand(*kv.shape)
-        tmp = np.ceil(ks * np.random.rand(*kv.shape) - DNA_BOUND[1]/2)
+        tmp = np.ceil(ks * np.random.rand(*kv.shape) - ks/2)
         kv += tmp
         # kv += (np.random.binomial(n=DNA_BOUND[1],
         #        p=0.5, size = N_DIMS) - np.ceil(DNA_BOUND[1]/2))
@@ -97,7 +96,7 @@ class SmartDim(object):
         #                         mut_strength=np.random.rand(POP_SIZE, DNA_SIZE))                # initialize the pop mutation strength values
         self.pop = dict(DNA=np.array([np.random.permutation(np.arange(1, N_DIMS + 1)) for _ in range(POP_SIZE
                                                                                                      )]),
-                        mut_strength=np.random.randint(1, DNA_SIZE + 1, POP_SIZE * DNA_SIZE).reshape(POP_SIZE, DNA_SIZE))                # initialize the pop mutation strength values
+                        mut_strength=np.random.randint(1, DNA_SIZE/2, POP_SIZE * DNA_SIZE).reshape(POP_SIZE, DNA_SIZE))                # initialize the pop mutation strength values
 
 
 def getEvoRst():
@@ -120,18 +119,16 @@ def runLocal():
         kids = make_kid(sd.pop, N_KID)
         sd.pop = kill_bad(sd.pop, kids)
         print('min dis is ', np.min(dt.getMinDisToOther(sd.pop['DNA'])))
-        # bstDNA = np.concatenate(
-        #     (TargePos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
-        # ploter.plotDNA(bstDNA)
-        # ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
+        bstDNA = np.concatenate(
+            (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
+        ploter.plotDNA(bstDNA)
+        ploter.plotFitness(bstFitness - bstFitness[0])
     bstDNA = np.concatenate(
         (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
 
     ploter.plotDNA(bstDNA)
     ploter.plotFitness(bstFitness - bstFitness[0])
-    plt.pause(100)
-    plt.show()
-    plt.ioff()
+    ploter.pause()
 
 runLocal()
 
