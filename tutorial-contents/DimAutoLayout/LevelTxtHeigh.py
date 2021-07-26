@@ -3,16 +3,15 @@ import matplotlib.pyplot as plt
 import MakeAndPlotDim as ploter
 import AutoDimUtil as util
 
-N_DIMS = 6  # DIM size
+N_DIMS = 10  # DIM size
 DNA_SIZE = N_DIMS            # DNA (real number)
 DNA_BOUND = [1, N_DIMS + 1]       # solution upper and lower bounds
-N_GENERATIONS = 300
+N_GENERATIONS = 40
 POP_SIZE = 100           # population size
 N_KID = 20               # n kids per generation
 
 dt = util.DimUtil(DNA_SIZE)
-curGenIndex = 0
-bstFitness = np.empty(N_GENERATIONS)
+bstFitness = []
 xAis = np.arange(N_GENERATIONS)
 
 # TargePos, dimVal= dt.MakeTarList()
@@ -78,10 +77,8 @@ def kill_bad(pop, kids):
     bestFit = np.max(fitness)
     print('max fit', bestFit)
 
-    bstFitness[curGenIndex] = bestFit
-    if(curGenIndex == 0):
-        bstFitness[:] = bstFitness[0]
-
+    bstFitness.append(bestFit)
+    
     idx = np.arange(pop['DNA'].shape[0])
     # 递增排列，取后POP_SIZE位
     # selected by fitness ranking (not value)
@@ -103,25 +100,61 @@ class SmartDim(object):
                         mut_strength=np.random.randint(1, DNA_SIZE + 1, POP_SIZE * DNA_SIZE).reshape(POP_SIZE, DNA_SIZE))                # initialize the pop mutation strength values
 
 
-sd = SmartDim()
-plt.ion()
-# plotDNA(sd.pop['DNA'][-1])
+def getEvoRst():
+    sd = SmartDim()
+    for i in range(N_GENERATIONS):
+        kids = make_kid(sd.pop, N_KID)
+        sd.pop = kill_bad(sd.pop, kids)
+        print('min dis is ', np.min(dt.getMinDisToOther(sd.pop['DNA'])))
+        # bstDNA = np.concatenate(
+        #     (TargePos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
+        # ploter.plotDNA(bstDNA)
+        # ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
+    bstDNA = np.concatenate(
+        (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
+    return bstDNA,bstFitness
 
-for i in range(N_GENERATIONS):
-    kids = make_kid(sd.pop, N_KID)
-    sd.pop = kill_bad(sd.pop, kids)
-    print('min dis is ', np.min(dt.getMinDisToOther(sd.pop['DNA'])))
-    curGenIndex += 1
-    # bstDNA = np.concatenate(
-    #     (TargePos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
-    # ploter.plotDNA(bstDNA)
-    # ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
-bstDNA = np.concatenate(
-    (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
-ploter.plotDNA(bstDNA)
-ploter.plotFitness(xAis[:curGenIndex],
-                   bstFitness[:curGenIndex] - bstFitness[0])
+def runLocal():
+    sd = SmartDim()
+    for i in range(N_GENERATIONS):
+        kids = make_kid(sd.pop, N_KID)
+        sd.pop = kill_bad(sd.pop, kids)
+        print('min dis is ', np.min(dt.getMinDisToOther(sd.pop['DNA'])))
+        # bstDNA = np.concatenate(
+        #     (TargePos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
+        # ploter.plotDNA(bstDNA)
+        # ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
+    bstDNA = np.concatenate(
+        (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
 
-plt.pause(100)
-plt.show()
-plt.ioff()
+    ploter.plotDNA(bstDNA)
+    ploter.plotFitness(bstFitness - bstFitness[0])
+    plt.pause(100)
+    plt.show()
+    plt.ioff()
+
+runLocal()
+
+# sd = SmartDim()
+# plt.ion()
+# # plotDNA(sd.pop['DNA'][-1])
+
+# for i in range(N_GENERATIONS):
+#     kids = make_kid(sd.pop, N_KID)
+#     sd.pop = kill_bad(sd.pop, kids)
+#     print('min dis is ', np.min(dt.getMinDisToOther(sd.pop['DNA'])))
+#     # bstDNA = np.concatenate(
+#     #     (TargePos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
+#     # ploter.plotDNA(bstDNA)
+#     # ploter.plotFitness(xAis[:curGenIndex], bstFitness[:curGenIndex] - bstFitness[0])
+# bstDNA = np.concatenate(
+#     (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
+# ploter.plotDNA(bstDNA)
+# ploter.plotFitness(xAis,
+#                    bstFitness - bstFitness[0])
+
+# plt.pause(100)
+# plt.show()
+# plt.ioff()
+
+

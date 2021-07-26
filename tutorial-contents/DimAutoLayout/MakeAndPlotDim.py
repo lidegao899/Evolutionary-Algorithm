@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import LevelTxtHeigh as evo
 
 N_DIMS = 4  # DIM size
 DNA_SIZE = N_DIMS * 2             # DNA (real number)
@@ -27,20 +27,24 @@ def plotDim(posLeft, posRight, txtHeigh):
     axs[0].plot([posRight, posRight], [0, txtHeigh], color='black')
 
 
+def plotDimForList(axs, posLeft, posRight, txtHeigh, index):
+    arrow_params = {'head_width': 0.4, 'head_length': 0.6,
+                    'length_includes_head': True}
+    dimLen = abs(posLeft-posRight)
+    midPost = posLeft + dimLen/2
+    axs[index, 0].arrow(midPost, txtHeigh, dimLen/2, 0, **arrow_params)
+    axs[index, 0].arrow(midPost, txtHeigh, -dimLen/2, 0, **arrow_params)
+
+    # 绘制标注边界线
+    axs[index,0].plot([posLeft, posLeft], [0, txtHeigh], color='black')
+    axs[index,0].plot([posRight, posRight], [0, txtHeigh], color='black')
+
+
 def plotDNA(DimPos):
     # 清空区域
     axs[0].cla()
     axs[1].cla()
 
-    # drawDNA
-    # xl, yl = DimPos.reshape((2, N_DIMS))
-    # axs[0].scatter(Dimp, tyl, s=200, lw=0, c='black', alpha=0.5)
-    # axs[0].scatter(xl, yl, s=200, lw=0, c='red', alpha=0.5)
-    # axs[0].set_title('best dimension graph')
-
-    # for dims in DimPos:
-        # axs[0].plot([xl[i], txl[i]], [yl[i], tyl[i]], 'r-')
-        # plot text
     for dim in DimPos:
         val = abs(dim[1]-dim[0])
         axs[0].text(dim[0] + val/2, dim[2], str(val),
@@ -48,12 +52,35 @@ def plotDNA(DimPos):
         plotDim(dim[0], dim[1], dim[2])
 
 
-def plotFitness(xAis,bstFitness):
+def plotFitness(bstFitness):
+    xAis = np.arange(len(bstFitness))
     axs[1].set_title('best fitness')
     axs[1].plot(xAis, bstFitness)
     fig.tight_layout()
     plt.pause(0.02)
 
 
+def plotFitnessForList(fig, axs, bstFitness, index=0):
+    xAis = np.arange(len(bstFitness))
+    axs[index, 1].set_title('best fitness')
+    axs[index, 1].plot(xAis, bstFitness)
+    fig.tight_layout()
+    plt.pause(0.02)
 # plotDNA([DimList])
 # plt.pause(10)
+
+
+def plotDNAForList(ax, DimPos, index):
+    for dim in DimPos:
+        val = abs(dim[1]-dim[0])
+        ax[index, 0].text(dim[0] + val/2, dim[2], str(val),
+                          size=15, va="center", ha="center")
+        plotDimForList(ax, dim[0], dim[1], dim[2], index)
+
+
+def plotCompare(DNAS, fitCurves):
+    fig, axs = plt.subplots(2, 2)
+
+    for i in range(0, len(DNAS)):
+        plotDNAForList(axs, DNAS[i], i)
+        plotFitnessForList(fig, axs, fitCurves[i], i)
