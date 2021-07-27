@@ -5,9 +5,10 @@ import AutoDimUtil as util
 N_DIMS = 10  # DIM size
 DNA_SIZE = N_DIMS            # DNA (real number)
 DNA_BOUND = [1, N_DIMS + 1]       # solution upper and lower bounds
-N_GENERATIONS = 300
+N_GENERATIONS = 3000
 POP_SIZE = 100           # population size
-N_KID = 20               # n kids per generation
+HALF_POP_SIZE = int(POP_SIZE/2)
+N_KID = 100               # n kids per generation
 
 dt = util.DimUtil(DNA_SIZE)
 bstFitness = []
@@ -23,7 +24,7 @@ def make_kid(pop, n_kid):
     for kv, ks in zip(kids['DNA'], kids['mut_strength']):
         # crossover (roughly half p1 and half p2)
         # 选父母
-        p1, p2 = np.random.choice(np.arange(25,POP_SIZE), size=2, replace=False)
+        p1, p2 = np.random.choice(np.arange(POP_SIZE), size=2, replace=False)
         # 交叉点
         cp = np.random.randint(
             0, 2, DNA_SIZE, dtype=np.bool)  # crossover points
@@ -115,19 +116,26 @@ def getEvoRst():
 
 def runLocal():
     sd = SmartDim()
+    
     for i in range(N_GENERATIONS):
         kids = make_kid(sd.pop, N_KID)
         sd.pop = kill_bad(sd.pop, kids)
-        print('min dis is ', np.min(dt.getMinDisToOther(sd.pop['DNA'])))
-        bstDNA = np.concatenate(
-            (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
-        ploter.plotDNA(bstDNA)
-        ploter.plotFitness(bstFitness - bstFitness[0])
+        # print('min dis is ', np.min(dt.getMinDisToOther(sd.pop['DNA'])))
+        # bstDNA = np.concatenate(
+        #     (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
+        # ploter.plotDNA(bstDNA)
+        # ploter.plotFitness(bstFitness - bstFitness[0])
+        if i == 0:
+            bstDNA = np.concatenate(
+        (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
+            ploter.plotFstDNA(bstDNA)
+            
     bstDNA = np.concatenate(
         (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
 
     ploter.plotDNA(bstDNA)
-    ploter.plotFitness(bstFitness - bstFitness[0])
+    ploter.plotFitness(np.log(bstFitness - bstFitness[0]))
+    
     ploter.pause()
 
 runLocal()
