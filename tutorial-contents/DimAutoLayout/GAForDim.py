@@ -3,12 +3,13 @@ import MakeAndPlotDim as ploter
 import AutoDimUtil as util
 
 
-N_DIMS = 8  # DNA size
+N_DIMS = 10  # DNA size
 DNA_SIZE = N_DIMS            # DNA (real number)
 CROSS_RATE = 0.2
 MUTATE_RATE = 1/N_DIMS
-POP_SIZE = 100
-N_GENERATIONS = 400
+POP_SIZE = 200
+N_GENERATIONS = 300
+END_EVO_NUM = 1000
 DNA_BOUND = [1,  N_DIMS]       # solution upper and lower bounds
 
 bstFitnessList = []
@@ -57,9 +58,9 @@ class GA(object):
         return parent
 
     def mutate(self, child, index = 0 ):
-        startIdx = int((N_GENERATIONS - index) / N_GENERATIONS * self.DNA_size)
-        print('startIdx = ', startIdx)
-        for point in range(startIdx):
+        # startIdx = int((N_GENERATIONS - index) / N_GENERATIONS * self.DNA_size)
+        # print('startIdx = ', startIdx)
+        for point in range(N_DIMS):
             if np.random.rand() < self.mutate_rate:
                 child[point] = np.random.randint(DNA_BOUND[0], DNA_BOUND[1])
         return child
@@ -113,6 +114,10 @@ def runLocalGa():
     ga = GA(DNA_size=N_DIMS, cross_rate=CROSS_RATE, mutation_rate=MUTATE_RATE, pop_size=POP_SIZE)
     bstDNA = ga.pop[0]
     bstFitness = 0
+    lstUpdIndex = 0
+#     curBstDNA = np.concatenate(
+# (dt.targetPos, np.array([bstDNA]).T), axis=1)
+#     ploter.plotFstDNA(curBstDNA)
 
     for generation in range(N_GENERATIONS):
         # lx, ly = ga.translateDNA(ga.pop, env.city_position)
@@ -130,7 +135,13 @@ def runLocalGa():
             bstFitness = curBestFit
             best_idx = np.argmax(fitness)
             bstDNA = ga.pop[best_idx]
+            lstUpdIndex = 0
 
+        if generation == 0:
+            curBstDNA = np.concatenate(
+        (dt.targetPos, np.array([ga.pop[0]]).T), axis=1)
+            ploter.plotFstDNA(curBstDNA)
+        
         bstFitnessList.append(bstFitness)
         print('Gen:', generation, '| best fit: %.2f' % bstFitness,)
 
@@ -142,6 +153,10 @@ def runLocalGa():
         print('max fit', bstFitness)
         
         ga.evolve(fitness, generation)
+        if lstUpdIndex > END_EVO_NUM:
+            break
+        else:
+            lstUpdIndex += 1
     curBstDNA = np.concatenate(
         (dt.targetPos, np.array([bstDNA]).T), axis=1)
     ploter.plotDNA(curBstDNA)

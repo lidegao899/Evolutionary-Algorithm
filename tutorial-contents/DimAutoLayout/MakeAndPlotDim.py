@@ -1,5 +1,9 @@
+# encoding:utf-8
 import numpy as np
 import matplotlib.pyplot as plt
+
+plt.rcParams['font.sans-serif'] = ['SimSun'] # 指定默认字体
+plt.rcParams['axes.unicode_minus'] = False # 解决保存图像是负号'-'显示为方块的问题
 
 N_DIMS = 4  # DIM size
 DNA_SIZE = N_DIMS * 2             # DNA (real number)
@@ -14,8 +18,10 @@ fig, axs = plt.subplots(1, 3)
 
 
 def plotDim(posLeft, posRight, txtHeigh, index):
-    arrow_params = {'head_width': 0.4, 'head_length': 0.6,
+    arrow_params = {'head_width': 0.2, 'head_length': 0.6,
                     'length_includes_head': True}
+
+    
     dimLen = abs(posLeft-posRight)
     midPost = posLeft + dimLen/2
     axs[index].arrow(midPost, txtHeigh, dimLen/2, 0, **arrow_params)
@@ -31,6 +37,7 @@ def plotDimForList(axs, posLeft, posRight, txtHeigh, index):
                     'length_includes_head': True}
     dimLen = abs(posLeft-posRight)
     midPost = posLeft + dimLen/2
+    
     axs[index, 0].arrow(midPost, txtHeigh, dimLen/2, 0, **arrow_params)
     axs[index, 0].arrow(midPost, txtHeigh, -dimLen/2, 0, **arrow_params)
 
@@ -40,7 +47,7 @@ def plotDimForList(axs, posLeft, posRight, txtHeigh, index):
 
 
 def plotFstDNA(DimPos):
-    axs[0].set_title('first run')
+    axs[0].set_title('初始布局', fontsize = 16)
     for dim in DimPos:
         val = abs(dim[1]-dim[0])
         axs[0].text(dim[0] + val/2, dim[2], str(val),
@@ -51,7 +58,8 @@ def plotDNA(DimPos):
     # 清空区域
     axs[1].cla()
     axs[2].cla()
-    axs[1].set_title('final run')
+    axs[1].set_title('最佳布局', fontsize = 16)
+    axs[1].set_yticks(np.arange(0, len(DimPos), 1))
 
     for dim in DimPos:
         val = abs(dim[1]-dim[0])
@@ -62,7 +70,9 @@ def plotDNA(DimPos):
 
 def plotFitness(bstFitness):
     xAis = np.arange(len(bstFitness))
-    axs[2].set_title('best fitness')
+    axs[2].set_title('适应度曲线', fontsize = 16)
+    axs[2].set_xlabel('迭代次数', fontsize = 16)
+    axs[2].set_ylabel('适应度', fontsize = 16)
     axs[2].plot(xAis, bstFitness)
     fig.tight_layout()
     plt.pause(0.02)
@@ -70,7 +80,7 @@ def plotFitness(bstFitness):
 
 def plotFitnessForList(fig, axs, bstFitness, index=0):
     xAis = np.arange(len(bstFitness))
-    axs[index, 1].set_title('best fitness')
+    axs[index, 1].set_title('适应度曲线', fontsize = 16)
     axs[index, 1].plot(xAis, bstFitness)
     fig.tight_layout()
     plt.pause(0.02)

@@ -1,13 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+arrLst = [[[2, 38], [6, 12], [4, 16], [20, 36], [24, 30], [30, 36]],
+          [[2, 38], [2, 18], [4, 12], [6, 12], [14, 18], [20, 24], [26, 38], [26, 30], [32, 38], [35, 38]]]
+
+
 class DimUtil(object):
     def __init__(self, DNA_size):
         self.DNA_size = DNA_size
-        self.targetPos,self.lens,self.dimWeight = self.MakeTarList()
-        
+        self.targetPos, self.lens, self.dimWeight = self.MakeTarList()
+
     def MakeTarList(self):
-        keys = np.random.randint(1, 40, self.DNA_size*2).reshape(self.DNA_size, 2)
+        if self.DNA_size == 6:
+            keys = arrLst[0]
+        elif self.DNA_size == 10:
+            keys = arrLst[1]
+        else:
+            keys = np.random.randint(
+                1, 40, self.DNA_size*2).reshape(self.DNA_size, 2)
         keys = np.sort(keys)
         # 防止标准值过小bu
         for key in keys:
@@ -32,7 +42,6 @@ class DimUtil(object):
             return True
         return False
 
-
     def getOverlapNum(self, TargePos):
         XOverlapNum = np.zeros(40)
         for dimRandge in TargePos:
@@ -40,18 +49,14 @@ class DimUtil(object):
                 XOverlapNum[index] += 1
         return np.max(XOverlapNum)
 
-
     # NUM_OVERLAP = getOverlapNum()
     # VALID_DIM_RANGE = NUM_OVERLAP
     # DNA_BOUND[1] = NUM_OVERLAP
 
-
-    def GetFitness(self, MaxFitness,lens):
+    def GetFitness(self, MaxFitness, lens):
         return MaxFitness - np.array(lens)
 
-
     # 获取所有样本的长度
-
 
     def GetLen(self, yList):
         # 样本所有点到（0,0）的距离
@@ -63,7 +68,6 @@ class DimUtil(object):
         return sum
 
     # 计算DNA内最近点的距离
-
 
     def getMinDisToOther(self, DNAS):
         # 有重叠的标注，高度一样则非法，mindis = 0.01

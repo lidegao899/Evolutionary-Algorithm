@@ -5,10 +5,11 @@ import AutoDimUtil as util
 N_DIMS = 10  # DIM size
 DNA_SIZE = N_DIMS            # DNA (real number)
 DNA_BOUND = [1, N_DIMS + 1]       # solution upper and lower bounds
-N_GENERATIONS = 3000
+N_GENERATIONS = 8000
 POP_SIZE = 100           # population size
 HALF_POP_SIZE = int(POP_SIZE/2)
 N_KID = 100               # n kids per generation
+END_EVO_NUM = 1000
 
 dt = util.DimUtil(DNA_SIZE)
 bstFitness = []
@@ -116,10 +117,13 @@ def getEvoRst():
 
 def runLocal():
     sd = SmartDim()
+    lstUpdIndex = 0
     
     for i in range(N_GENERATIONS):
         kids = make_kid(sd.pop, N_KID)
         sd.pop = kill_bad(sd.pop, kids)
+        lstUpdIndex += 1
+        
         # print('min dis is ', np.min(dt.getMinDisToOther(sd.pop['DNA'])))
         # bstDNA = np.concatenate(
         #     (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
@@ -127,8 +131,12 @@ def runLocal():
         # ploter.plotFitness(bstFitness - bstFitness[0])
         if i == 0:
             bstDNA = np.concatenate(
-        (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
+        (dt.targetPos, np.array([sd.pop['DNA'][0]]).T), axis=1)
             ploter.plotFstDNA(bstDNA)
+        elif bstFitness[-1] > bstFitness[-2]:
+            lstUpdIndex = 0
+        elif lstUpdIndex > END_EVO_NUM:
+            break
             
     bstDNA = np.concatenate(
         (dt.targetPos, np.array([sd.pop['DNA'][-1]]).T), axis=1)
