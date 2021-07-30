@@ -8,7 +8,7 @@ DNA_SIZE = N_DIMS            # DNA (real number)
 CROSS_RATE = 0.2
 MUTATE_RATE = 1/N_DIMS
 POP_SIZE = 200
-N_GENERATIONS = 300
+N_GENERATIONS = 6000
 END_EVO_NUM = 1000
 DNA_BOUND = [1,  N_DIMS]       # solution upper and lower bounds
 
@@ -136,6 +136,8 @@ def runLocalGa():
             best_idx = np.argmax(fitness)
             bstDNA = ga.pop[best_idx]
             lstUpdIndex = 0
+            print('Gen:', generation, ' evo ', '| best fit: %.2f' % bstFitness,)
+            
 
         if generation == 0:
             curBstDNA = np.concatenate(
@@ -143,14 +145,14 @@ def runLocalGa():
             ploter.plotFstDNA(curBstDNA)
         
         bstFitnessList.append(bstFitness)
-        print('Gen:', generation, '| best fit: %.2f' % bstFitness,)
+        # print('Gen:', generation, '| best fit: %.2f' % bstFitness,)
 
         # curBstDNA = np.concatenate(
         #     (TargePos, np.array([bstDNA]).T), axis=1)
         # ploter.plotDNA(curBstDNA)
         # ploter.plotFitness(xAis[:curGenIndex],
         #                 bstFitnessList[:curGenIndex] - bstFitnessList[0])
-        print('max fit', bstFitness)
+        # print('max fit', bstFitness)
         
         ga.evolve(fitness, generation)
         if lstUpdIndex > END_EVO_NUM:

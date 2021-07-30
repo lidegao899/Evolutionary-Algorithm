@@ -76,7 +76,7 @@ def kill_bad(pop, kids):
 
     fitness = fitness * minDis
     bestFit = np.max(fitness)
-    print('max fit', bestFit)
+    # print('max fit', bestFit)
 
     bstFitness.append(bestFit)
     
@@ -135,6 +135,8 @@ def runLocal():
             ploter.plotFstDNA(bstDNA)
         elif bstFitness[-1] > bstFitness[-2]:
             lstUpdIndex = 0
+            print('Gen:', i, '| best fit: %.2f' % bstFitness[-1],)
+            
         elif lstUpdIndex > END_EVO_NUM:
             break
             
